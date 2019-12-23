@@ -1,0 +1,11 @@
+# 
+# Rules for the GM1356 sound level meter
+# 
+# Allows non-root users to access the device at a fixed path: /dev/gm1356
+#
+
+ACTION=="add", \
+    ATTRS{idProduct}=="74e3", \
+    ATTRS{idVendor}=="64bd", \
+    SYMLINK+="gm1356", \
+    MODE="0666"
