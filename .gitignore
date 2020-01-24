@@ -1,0 +1,7 @@
+/build
+/dist
+/*.egg-info
+/.mypy_cache
+
+*.py[c|o|d]
+settings.json
