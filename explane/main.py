@@ -185,10 +185,10 @@ def measuring_loop(device, location, settings):
 
         plane_location = Location(closest_plane.latitude, closest_plane.longitude, closest_plane.geo_altitude)
         distance_meters = round(get_distance_meters(location, plane_location))
-        print("Closest airplane found at",
+        print('Closest airplane found at',
               distance_meters,
-              "meters distance:",
-              plane_to_str(closest_plane))
+              'meters distance:',
+              closest_plane)
 
         measurement = Measurement(values=list(value_queue), sample_time_seconds=sample_time_sec)
         registration = PlaneRegistration(location,
@@ -224,14 +224,6 @@ def get_closest_plane(from_location: Location, candidates):
             closest_plane = plane
 
     return closest_plane
-
-
-def plane_to_str(plane):
-    return ("({}, {} {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})"
-            .format(plane.icao24, plane.callsign, plane.origin_country, plane.latitude,
-                    plane.longitude, plane.baro_altitude, plane.time_position, plane.on_ground,
-                    plane.velocity, plane.heading, plane.vertical_rate, plane.squawk, plane.spi,
-                    plane.position_source))
 
 
 def find_planes_in_area(lowerboundlat, upperboundlat, lowerboundlong, upperboundlong):

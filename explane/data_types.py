@@ -1,6 +1,5 @@
 import datetime
 import json
-import time
 
 from collections import namedtuple
 
@@ -49,6 +48,12 @@ class PlaneRegistration:
         self.planeVelocity = plane.velocity
         self.planeVerticalRate = plane.vertical_rate
         self.sampleDurationInMs = (measurement.sample_time_seconds * 1000) * len(measurement.values)
+
+    def __str__(self):
+        return f'({self.icao24}, {self.callsign}, {self.origin_country}, {self.latitude}, ' \
+            f'{self.longitude}, {self.baro_altitude}, {self.time_position}, {self.on_ground}, ' \
+            f'{self.velocity}, {self.heading}, {self.vertical_rate}, {self.squawk}, {self.spi}, ' \
+            f'{self.position_source})'
 
     def to_json(self):
         return json.dumps(self.__dict__)
