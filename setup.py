@@ -28,7 +28,7 @@ setup(
     python_requires='>=3.6',
     install_requires=requirements(),
     extras_require={
-        'test': ['pytest'],
+        'test': ['pytest', 'flake8'],
     },
     entry_points={
         'console_scripts': [

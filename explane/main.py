@@ -33,7 +33,11 @@ def main():
     settings = DEFAULT_SETTINGS
     settings.update(read_settings())
 
-    location = Location(latitude=52.3255699, longitude=4.7222645, altitude_meters=-1)  # Schiphol. For testing as there should always be planes here, unless something unusual has happened.
+    # Schiphol. For testing as there should always be planes here, unless something unusual has happened.
+    # location = Location(latitude=52.3255699, longitude=4.7222645, altitude_meters=-1)
+
+    # Close to Heathrow Airport
+    location = Location(latitude=51.58, longitude=-0.33, altitude_meters=5)
 
     try:
         device = init_sound_level_meter_device(settings['sound_level_meter'])
