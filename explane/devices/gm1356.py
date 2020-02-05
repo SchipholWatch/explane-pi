@@ -5,7 +5,7 @@ from enum import Enum
 import usb.core
 import usb.util
 
-from ..exceptions import DeviceError
+from ..exceptions import FatalDeviceError
 
 
 class MeasureRange(Enum):
@@ -42,7 +42,7 @@ class Gm1356:
     def connect(self):
         self.dev = usb.core.find(idVendor=self.ID_VENDOR, idProduct=self.ID_PRODUCT)
         if self.dev is None:
-            raise DeviceError("Could not find GM1356 sound measurement device")
+            raise FatalDeviceError("Could not find GM1356 sound measurement device")
 
         if self.dev.is_kernel_driver_active(0):
             self.dev.detach_kernel_driver(0)

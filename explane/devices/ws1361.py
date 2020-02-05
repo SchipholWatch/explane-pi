@@ -1,6 +1,6 @@
 import usb.core
 
-from .exceptions import DeviceError
+from .exceptions import FatalDeviceError
 
 # Inspired by ebswift, https://www.ebswift.com/reverse-engineering-spl-usb.html
 
@@ -19,7 +19,7 @@ maxModes = ["instant", "max"]
 def connect():
     dev = usb.core.find(idVendor=0x16c0, idProduct=0x5dc)
     if dev is None:
-        raise DeviceError("Could not find WS1361 sound meter hardware")
+        raise FatalDeviceError("Could not find WS1361 sound meter hardware")
 
     return dev
 

@@ -13,7 +13,7 @@ from opensky_api.opensky_api import OpenSkyApi
 
 from . import devices
 from .data_types import Location, Measurement, PlaneRegistration
-from .exceptions import DeviceError, ExternalServiceError
+from .exceptions import FatalDeviceError, ExternalServiceError
 from .location import travel_from_point, get_distance_meters
 
 
@@ -38,8 +38,8 @@ def main():
 
     try:
         device = init_sound_level_meter_device(settings['sound_level_meter'])
-    except DeviceError as e:
-        print('ERROR:', e)
+    except FatalDeviceError as e:
+        print('Device error:', e, file=sys.stderr)
         sys.exit(1)
 
     settings['mac_address'] = get_mac_address(get_ethernet_interface())

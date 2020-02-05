@@ -1,4 +1,4 @@
-class DeviceError(Exception):
+class FatalDeviceError(Exception):
     """Represents an error with an external device that cannot be recovered from."""
 
 
