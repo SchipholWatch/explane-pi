@@ -7,23 +7,22 @@ import traceback
 
 from collections import deque
 
-import requests
-
 from opensky_api.opensky_api import OpenSkyApi
 
 from . import devices
 from .data_types import Location, Measurement, PlaneRegistration
 from .exceptions import FatalDeviceError, ExternalServiceError
 from .location import travel_from_point, get_distance_meters
+from .registration_api import get_registration_url, send_registration
 
 
 DEFAULT_SETTINGS = {
     'altitude_meters': 1,
-    'api_url': '',
     'mac_address': None,
     'sample_size': 10,
     'sound_level_meter': 'gm1356',
     'threshold_decibel': 50,
+    'registration_url': None,
 }
 
 DECIBELA_WHISPER = 30
@@ -43,9 +42,9 @@ def main():
         sys.exit(1)
 
     settings['mac_address'] = get_mac_address(get_ethernet_interface())
+    settings['registration_url'] = get_registration_url()
 
     print('Settings:', settings)
-    print('Initialization complete')
 
     while True:
         try:
@@ -198,10 +197,12 @@ def measuring_loop(device, location, settings):
                                          distance_meters,
                                          settings)
 
-        print("Would send this to API:", registration.to_json())
-        # TODO Error catching of API calls
-        # writeattempt = write_to_table(to_write, settings)
-        # print(json.dumps(writeattempt.__dict__))
+        print('Will send this to API:', registration.to_json())
+        try:
+            send_registration(settings['registration_url'], registration)
+        except ExternalServiceError as e:
+            print(e, file=sys.stderr)
+
         # TODO (???) implement cutoffheight
 
         last_registered_plane = closest_plane
@@ -243,8 +244,8 @@ def find_planes_in_area(lowerboundlat, upperboundlat, lowerboundlong, upperbound
         return []
 
     except Exception as e:
-        print("OpenSky API call broke: {}".format(e))
-        raise ExternalServiceError() from e
+        print("OpenSky API call failed: {}".format(e))
+        raise ExternalServiceError from e
 
 
 if __name__ == '__main__':
