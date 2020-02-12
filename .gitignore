@@ -4,4 +4,4 @@
 /.mypy_cache
 
 *.py[c|o|d]
-settings.json
+settings.toml

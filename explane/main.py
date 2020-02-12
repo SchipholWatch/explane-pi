@@ -6,6 +6,9 @@ import time
 import traceback
 
 from collections import deque
+from pathlib import Path
+
+import toml
 
 from opensky_api.opensky_api import OpenSkyApi
 
@@ -17,7 +20,11 @@ from .registration_api import get_registration_url, send_registration
 
 
 DEFAULT_SETTINGS = {
-    'altitude_meters': 1,
+    'location': {
+        'altitude_meters': 1,
+        'latitude': None,
+        'longitude': None,
+    },
     'mac_address': None,
     'sample_size': 10,
     'sound_level_meter': 'gm1356',
@@ -30,17 +37,14 @@ STATUS_LOG_FMT = '{:%Y-%m-%d %H:%M:%S}: {} (#{}) Average: {}'
 
 
 def main():
-    settings = DEFAULT_SETTINGS
-    settings.update(read_settings())
+    settings = get_settings()
 
-    # Schiphol. For testing as there should always be planes here, unless something unusual has happened.
-    # location = Location(latitude=52.3255699, longitude=4.7222645, altitude_meters=-1)
-
-    # Close to Heathrow Airport
-    location = Location(latitude=51.58, longitude=-0.33, altitude_meters=5)
+    if not all(settings['location'].values()):
+        print('Some or all location information is missing in the settings. Please edit settings.toml', file=sys.stderr)
+        sys.exit(1)
 
     try:
-        device = init_sound_level_meter_device(settings['sound_level_meter'])
+        device = init_sound_level_meter_device(settings['devices']['sound_level_meter'])
     except FatalDeviceError as e:
         print('Device error:', e, file=sys.stderr)
         sys.exit(1)
@@ -50,6 +54,8 @@ def main():
 
     print('Settings:', settings)
 
+    location = Location(**settings['location'])
+
     while True:
         try:
             measuring_loop(device, location, settings)
@@ -58,14 +64,39 @@ def main():
             print(traceback.format_exc(), file=sys.stderr)
 
 
-def read_settings():
-    """Returns a dict of settings."""
-    # TODO Iets anders gebruiken dan JSON. JSON is niet mensvriendelijk.
-    try:
-        with open('settings.json') as json_file:
-            return json.load(json_file)
-    except FileNotFoundError:
-        return {}
+def get_settings():
+    """Returns a dict of settings.
+
+    These consist of the default settings, plus overrides loaded from settings.toml.
+    """
+    search_paths = os.environ.get('XDG_CONFIG_DIRS', '').split(':')
+    search_paths.append(os.path.dirname(os.path.abspath(__file__)))
+    search_paths.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+    if 'HOME' in os.environ:
+        search_paths.append(os.environ.get('HOME'))
+
+    settings = DEFAULT_SETTINGS
+    loaded_settings = {}
+    for path in search_paths:
+        path = Path(path) / 'settings.toml'
+        if not path.exists() or not path.is_file():
+            continue
+
+        loaded_settings = toml.load(path)
+        print('Found settings at', path)
+
+    if len(loaded_settings) == 0:
+        print('Did not find settings.toml or file was empty, using defaults')
+        return settings
+
+    for key, value in loaded_settings.items():
+        if isinstance(value, dict):
+            # Merge dicts instead of overwriting them
+            settings.setdefault(key, {}).update(value)
+        else:
+            settings[key] = value
+
+    return settings
 
 
 def init_sound_level_meter_device(model):
